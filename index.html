@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health & Lifestyle - English Vocabulary Quiz</title>
+  <style>
+    /* ==========================================================================
+       1. DESIGN SYSTEM & CSS VARIABLES
+       ========================================================================== */
+    :root {
+      --primary-green: #2ecc71;
+      --primary-blue: #3498db;
+      --dark-green: #27ae60;
+      --dark-blue: #2980b9;
+      --bg-gradient: linear-gradient(135deg, #e0f7fa 0%, #e8f8f5 100%);
+      --card-bg: #ffffff;
+      --text-main: #2c3e50;
+      --text-muted: #7f8c8d;
+      
+      --correct-color: #2ecc71;
+      --correct-bg: #e8f8f5;
+      --wrong-color: #e74c3c;
+      --wrong-bg: #fadbd8;
+      
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --radius-sm: 12px;
+      
+      --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
+      --shadow-button: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --transition-fast: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: var(--text-main);
+    }
+
+    /* ==========================================================================
+       2. CONTAINER & CARD LAYOUT
+       ========================================================================== */
+    .quiz-container {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 600px;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Header & Progress Stats */
+    .quiz-header {
+      margin-bottom: 24px;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .question-count {
+      color: var(--primary-blue);
+    }
+
+    .score-count {
+      color: var(--primary-green);
+    }
+
+    /* Progress Bar Structure */
+    .progress-container {
+      width: 100%;
+      height: 12px;
+      background-color: #ecf0f1;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary-blue), var(--primary-green));
+      border-radius: 10px;
+      transition: width 0.4s ease;
+    }
+
+    /* ==========================================================================
+       3. QUESTION & OPTIONS
+       ========================================================================== */
+    .question-box {
+      text-align: center;
+      margin: 28px 0;
+    }
+
+    .question-label {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .target-word {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--dark-blue);
+      letter-spacing: 0.5px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    @media (min-width: 480px) {
+      .options-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .option-btn {
+      background: #ffffff;
+      border: 2px solid #e2e8f0;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      transition: var(--transition-fast);
+      box-shadow: var(--shadow-button);
+      outline: none;
+      text-align: left;
+    }
+
+    .option-prefix {
+      background: #f1f5f9;
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: var(--transition-fast);
+    }
+
+    .option-btn:hover:not([disabled]) {
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(52, 152, 219, 0.15);
+    }
+
+    .option-btn:hover:not([disabled]) .option-prefix {
+      background: var(--primary-blue);
+      color: #ffffff;
+    }
+
+    /* Feedback States */
+    .option-btn.correct {
+      background-color: var(--correct-bg) !important;
+      border-color: var(--correct-color) !important;
+      color: #1e8449 !important;
+    }
+
+    .option-btn.correct .option-prefix {
+      background-color: var(--correct-color) !important;
+      color: #ffffff !important;
+    }
+
+    .option-btn.wrong {
+      background-color: var(--wrong-bg) !important;
+      border-color: var(--wrong-color) !important;
+      color: #922b21 !important;
+    }
+
+    .option-btn.wrong .option-prefix {
+      background-color: var(--wrong-color) !important;
+      color: #ffffff !important;
+    }
+
+    .option-btn[disabled] {
+      cursor: default;
+    }
+
+    /* Status Banner */
+    .feedback-banner {
+      min-height: 36px;
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .feedback-banner.show {
+      opacity: 1;
+    }
+
+    .feedback-banner.correct {
+      color: var(--correct-color);
+    }
+
+    .feedback-banner.wrong {
+      color: var(--wrong-color);
+    }
+
+    /* ==========================================================================
+       4. RESULTS SCREEN
+       ========================================================================== */
+    .results-screen {
+      text-align: center;
+      padding: 10px 0;
+      display: none;
+    }
+
+    .results-title {
+      font-size: 1.8rem;
+      color: var(--dark-blue);
+      margin-bottom: 16px;
+    }
+
+    .badge-icon {
+      font-size: 4rem;
+      margin-bottom: 12px;
+    }
+
+    .score-display {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--primary-green);
+      margin-bottom: 4px;
+    }
+
+    .percentage-display {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .message-box {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 28px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: var(--radius-sm);
+    }
+
+    .restart-btn {
+      background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+      color: #ffffff;
+      border: none;
+      padding: 16px 36px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
+      transition: var(--transition-fast);
+    }
+
+    .restart-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(46, 204, 113, 0.4);
+    }
+
+    /* Utility */
+    .hide {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-container">
+    
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen">
+      <div class="quiz-header">
+        <div class="stats-bar">
+          <span class="question-count" id="question-tracker">Question 1 / 20</span>
+          <span class="score-count" id="score-tracker">Score: 0</span>
+        </div>
+        <div class="progress-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+
+      <div class="question-box">
+        <div class="question-label">What is the Vietnamese meaning of:</div>
+        <div class="target-word" id="target-word">Loading...</div>
+      </div>
+
+      <div class="options-grid" id="options-grid">
+        <!-- Buttons rendered dynamically via JavaScript -->
+      </div>
+
+      <div class="feedback-banner" id="feedback-banner"></div>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div id="results-screen" class="results-screen">
+      <div class="badge-icon" id="result-badge">🏆</div>
+      <h2 class="results-title">Quiz Completed!</h2>
+      <div class="score-display" id="final-score">0 / 0</div>
+      <div class="percentage-display" id="final-percentage">0%</div>
+      <div class="message-box" id="result-message">Great effort!</div>
+      <button class="restart-btn" onclick="initQuiz()">Play Again</button>
+    </div>
+
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. VOCABULARY DATA BANK
+       ========================================================================== 
+       Teachers: You can easily edit or add new vocabulary objects to this array.
+       Format:
+       {
+         word: "English Word",
+         correct: "Correct Vietnamese Translation",
+         options: ["Option 1", "Option 2", "Option 3", "Option 4"]
+       }
+    */
+    const vocabularyBank = [
+      {
+        word: "sunburn",
+        correct: "sự cháy nắng",
+        options: ["sự cháy nắng", "kem chống nắng", "ánh nắng mặt trời", "sự sốt cao"]
+      },
+      {
+        word: "suncream",
+        correct: "kem chống nắng",
+        options: ["kem chống nắng", "kem đánh răng", "dầu gội đầu", "thuốc trị bỏng"]
+      },
+      {
+        word: "fresh air",
+        correct: "không khí trong lành",
+        options: ["không khí trong lành", "nước sạch", "thời tiết mát mẻ", "gió mạnh"]
+      },
+      {
+        word: "lunch box",
+        correct: "hộp đựng đồ ăn trưa",
+        options: ["hộp đựng đồ ăn trưa", "túi đi học", "chai nước", "bàn ăn"]
+      },
+      {
+        word: "boating",
+        correct: "chèo thuyền",
+        options: ["chèo thuyền", "đi bơi", "leo núi", "câu cá"]
+      },
+      {
+        word: "protect",
+        correct: "bảo vệ",
+        options: ["bảo vệ", "phát triển", "tấn công", "chăm sóc"]
+      },
+      {
+        word: "redness",
+        correct: "tình trạng ửng đỏ (da)",
+        options: ["tình trạng ửng đỏ (da)", "sự đau đớn", "vết ngứa", "mụn nhọt"]
+      },
+      {
+        word: "skin",
+        correct: "làn da",
+        options: ["làn da", "mái tóc", "cơ thể", "xương"]
+      },
+      {
+        word: "carry",
+        correct: "mang, vác",
+        options: ["mang, vác", "ném, quăng", "kéo lê", "đẩy đi"]
+      },
+      {
+        word: "facility",
+        correct: "cơ sở vật chất, trang thiết bị",
+        options: ["cơ sở vật chất, trang thiết bị", "bệnh viện", "dụng cụ học tập", "tòa nhà"]
+      },
+      {
+        word: "meal",
+        correct: "bữa ăn",
+        options: ["bữa ăn", "món ăn vặt", "nước uống", "thực đơn"]
+      },
+      {
+        word: "sunlight",
+        correct: "ánh nắng mặt trời",
+        options: ["ánh nắng mặt trời", "cháy nắng", "bình minh", "hoàng hôn"]
+      },
+      {
+        word: "maintain",
+        correct: "duy trì, bảo dưỡng",
+        options: ["duy trì, bảo dưỡng", "thay đổi", "tăng cường", "từ bỏ"]
+      },
+      {
+        word: "improve",
+        correct: "cải thiện, nâng cao",
+        options: ["cải thiện, nâng cao", "giữ nguyên", "sửa chữa", "suy giảm"]
+      },
+      {
+        word: "mental",
+        correct: "thuộc về tinh thần",
+        options: ["thuộc về tinh thần", "thuộc về thể chất", "sức khỏe", "cảm xúc"]
+      },
+      {
+        word: "physical",
+        correct: "thuộc về thể chất",
+        options: ["thuộc về thể chất", "thuộc về tinh thần", "vận động", "chiều cao"]
+      },
+      {
+        word: "prevent",
+        correct: "ngăn ngừa, phòng chống",
+        options: ["ngăn ngừa, phòng chống", "chữa trị", "gây ra", "cho phép"]
+      },
+      {
+        word: "peaceful",
+        correct: "yên bình, thanh bình",
+        options: ["yên bình, thanh bình", "ồn ào", "sôi động", "vui vẻ"]
+      },
+      {
+        word: "topic",
+        correct: "chủ đề",
+        options: ["chủ đề", "đoạn văn", "bài tập", "môn học"]
+      },
+      {
+        word: "equipment",
+        correct: "thành phần, thiết bị",
+        options: ["trang thiết bị, dụng cụ", "quần áo thể thao", "máy tính", "đồ dùng cá nhân"]
+      }
+    ];
+
+    /* ==========================================================================
+       2. AUDIO SYNTHESIS (Web Audio API - No External Files Required)
+       ========================================================================== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      // Resume context if suspended by browser autoplay policy
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'correct') {
+        // High-pitched cheerful double beep
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now); // C5
+        osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'wrong') {
+        // Low-pitched buzz sound
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.setValueAtTime(130, now + 0.15);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    }
+
+    /* ==========================================================================
+       3. GAME STATE & LOGIC
+       ========================================================================== */
+    let currentQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+    let isAnsweringAllowed = true;
+
+    // DOM Elements
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const questionTracker = document.getElementById('question-tracker');
+    const scoreTracker = document.getElementById('score-tracker');
+    const progressBar = document.getElementById('progress-bar');
+    const targetWord = document.getElementById('target-word');
+    const optionsGrid = document.getElementById('options-grid');
+    const feedbackBanner = document.getElementById('feedback-banner');
+
+    const finalScore = document.getElementById('final-score');
+    const finalPercentage = document.getElementById('final-percentage');
+    const resultMessage = document.getElementById('result-message');
+    const resultBadge = document.getElementById('result-badge');
+
+    // Array Shuffle Utility (Fisher-Yates)
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    // Initialize Game
+    function initQuiz() {
+      // Deep copy and randomize questions list
+      currentQuestions = shuffleArray(vocabularyBank).map(q => {
+        return {
+          ...q,
+          shuffledOptions: shuffleArray(q.options)
+        };
+      });
+
+      currentIndex = 0;
+      score = 0;
+      isAnsweringAllowed = true;
+
+      // Reset UI Views
+      resultsScreen.style.display = 'none';
+      quizScreen.style.display = 'block';
+      
+      updateStats();
+      renderQuestion();
+    }
+
+    // Render Current Question
+    function renderQuestion() {
+      isAnsweringAllowed = true;
+      const q = currentQuestions[currentIndex];
+
+      // Hide feedback banner
+      feedbackBanner.className = 'feedback-banner';
+      feedbackBanner.textContent = '';
+
+      // Set display word
+      targetWord.textContent = q.word;
+
+      // Render options grid
+      optionsGrid.innerHTML = '';
+      const prefixes = ['A', 'B', 'C', 'D'];
+
+      q.shuffledOptions.forEach((optText, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `
+          <span class="option-prefix">${prefixes[i]}</span>
+          <span>${optText}</span>
+        `;
+        btn.addEventListener('click', () => handleAnswerSelect(optText, btn));
+        optionsGrid.appendChild(btn);
+      });
+
+      updateStats();
+    }
+
+    // Update Scores and Progress Indicators
+    function updateStats() {
+      const total = currentQuestions.length;
+      questionTracker.textContent = `Question ${currentIndex + 1} / ${total}`;
+      scoreTracker.textContent = `Score: ${score}`;
+      
+      const progressPercent = ((currentIndex) / total) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+    }
+
+    // Handle User Answer Selection
+    function handleAnswerSelect(selectedOption, selectedBtn) {
+      if (!isAnsweringAllowed) return;
+      isAnsweringAllowed = false;
+
+      const q = currentQuestions[currentIndex];
+      const isCorrect = (selectedOption === q.correct);
+      const allButtons = optionsGrid.querySelectorAll('.option-btn');
+
+      if (isCorrect) {
+        score++;
+        selectedBtn.classList.add('correct');
+        feedbackBanner.textContent = '✔ Correct!';
+        feedbackBanner.className = 'feedback-banner show correct';
+        playSound('correct');
+      } else {
+        selectedBtn.classList.add('wrong');
+        feedbackBanner.textContent = '✘ Incorrect!';
+        feedbackBanner.className = 'feedback-banner show wrong';
+        playSound('wrong');
+
+        // Reveal correct answer to assist learning
+        allButtons.forEach(btn => {
+          if (btn.textContent.includes(q.correct)) {
+            btn.classList.add('correct');
+          }
+        });
+      }
+
+      // Disable all option buttons
+      allButtons.forEach(btn => btn.setAttribute('disabled', 'true'));
+
+      // Update live score display
+      scoreTracker.textContent = `Score: ${score}`;
+
+      // Automatically step forward after 1.5s
+      setTimeout(() => {
+        currentIndex++;
+        if (currentIndex < currentQuestions.length) {
+          renderQuestion();
+        } else {
+          showResults();
+        }
+      }, 1500);
+    }
+
+    // Show Game Over / Results Screen
+    function showResults() {
+      quizScreen.style.display = 'none';
+      resultsScreen.style.display = 'block';
+
+      const total = currentQuestions.length;
+      const percentage = Math.round((score / total) * 100);
+
+      finalScore.textContent = `${score} / ${total}`;
+      finalPercentage.textContent = `${percentage}% Correct`;
+
+      // Set contextual encouragement message based on score
+      if (percentage >= 85) {
+        resultBadge.textContent = '🌟';
+        resultMessage.textContent = 'Excellent! You are a Vocabulary Master!';
+        resultMessage.style.color = '#27ae60';
+      } else if (percentage >= 60) {
+        resultBadge.textContent = '👍';
+        resultMessage.textContent = 'Good Job! You know your health words well!';
+        resultMessage.style.color = '#2980b9';
+      } else {
+        resultBadge.textContent = '📚';
+        resultMessage.textContent = 'Keep Practicing! Review the words and try again!';
+        resultMessage.style.color = '#e67e22';
+      }
+    }
+
+    // Start game on page load
+    window.onload = initQuiz;
+  </script>
+</body>
+</html>
